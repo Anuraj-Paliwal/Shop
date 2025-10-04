@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transactions</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: #f5f7fa;
+            color: #333;
+        }
+
+        .navbar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .navbar h1 {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .navbar-right {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .navbar a {
+            color: white;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            background: rgba(255,255,255,0.2);
+            border-radius: 6px;
+            transition: background 0.2s;
+            font-size: 0.9rem;
+        }
+
+        .navbar a:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1.5rem;
+        }
+
+        .card {
+            background: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .card h2 {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 1.25rem;
+            color: #1a202c;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .stat-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1.25rem;
+            border-radius: 8px;
+        }
+
+        .stat-value {
+            font-size: 1.75rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            opacity: 0.95;
+        }
+
+        .transaction-form {
+            max-width: 500px;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            font-size: 0.95rem;
+        }
+
+        .amount-input-wrapper {
+            position: relative;
+        }
+
+        .currency-symbol {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.5rem;
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .amount-input {
+            width: 100%;
+            padding: 0.875rem 1rem 0.875rem 3rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 6px;
+            font-size: 1.5rem;
+            font-weight: 600;
+            transition: border-color 0.2s;
+        }
+
+        .amount-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            padding: 0.875rem 1.5rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .btn:hover:not(:disabled) {
+            transform: translateY(-1px);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .btn-small {
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+        }
+
+        .alert {
+            padding: 1rem;
+            border-radius: 6px;
+            margin-bottom: 1.5rem;
+            display: none;
+            border-left: 4px solid;
+        }
+
+        .alert-success {
+            background: #f0fdf4;
+            border-color: #22c55e;
+            color: #166534;
+        }
+
+        .alert-danger {
+            background: #fef2f2;
+            border-color: #ef4444;
+            color: #991b1b;
+        }
+
+        .risk-factors {
+            margin-top: 0.75rem;
+            padding: 0.875rem;
+            background: #fffbeb;
+            border-radius: 4px;
+        }
+
+        .risk-factors ul {
+            margin-left: 1.25rem;
+            margin-top: 0.5rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 0.875rem;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        th {
+            background: #f8fafc;
+            font-weight: 600;
+            font-size: 0.875rem;
+            color: #475569;
+        }
+
+        tbody tr:hover {
+            background: #f8fafc;
+        }
+
+        .status-badge {
+            padding: 0.25rem 0.625rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-genuine {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .status-fraudulent {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .probability-bar {
+            height: 24px;
+            background: #e2e8f0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .probability-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #22c55e, #eab308, #ef4444);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 0.75rem;
+            transition: width 0.3s;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 1rem 0;
+        }
+
+        .spinner {
+            border: 3px solid #e2e8f0;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 0.5rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .pagination {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+        }
+
+        .modal-content {
+            background: white;
+            margin: 5% auto;
+            border-radius: 8px;
+            padding: 2rem;
+            width: 90%;
+            max-width: 700px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .close-btn {
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #64748b;
+        }
+
+        .modal-section {
+            margin-bottom: 1.25rem;
+        }
+
+        .modal-section h4 {
+            font-size: 0.95rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #475569;
+        }
+
+        .modal-section pre {
+            background: #f8fafc;
+            padding: 1rem;
+            border-radius: 4px;
+            font-size: 0.875rem;
+            overflow-x: auto;
+            border: 1px solid #e2e8f0;
+        }
+
+        @media (max-width: 768px) {
+            .navbar {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .controls {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <h1>My Transactions</h1>
+        <div class="navbar-right">
+            <span>Welcome, <strong>{{ username }}</strong></span>
+            <a href="/logout">Sign Out</a>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="stats-grid">
+            <div class="stat-box">
+                <div class="stat-value" id="totalTx">{{ profile.total_transactions or 0 }}</div>
+                <div class="stat-label">Total Transactions</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-value">${{ "%.2f"|format(profile.avg_amount or 0) }}</div>
+                <div class="stat-label">Average Amount</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-value">${{ "%.2f"|format(profile.total_amount or 0) }}</div>
+                <div class="stat-label">Total Spent</div>
+            </div>
+        </div>
+
+        <div id="alertSuccess" class="alert alert-success"></div>
+        <div id="alertDanger" class="alert alert-danger"></div>
+        <div class="card">
+            <h2>New Transaction</h2>
+            <form id="transactionForm" class="transaction-form">
+                <div class="form-group">
+                    <label for="amount">Transaction Amount</label>
+                    <div class="amount-input-wrapper">
+                        <span class="currency-symbol">$</span>
+                        <input 
+                            type="number" 
+                            id="amount" 
+                            class="amount-input"
+                            step="0.01" 
+                            min="0.01"
+                            placeholder="0.00"
+                            required
+                            autofocus>
+                    </div>
+                </div>
+
+                <div class="loading" id="loading">
+                    <div class="spinner"></div>
+                    <p>Processing transaction...</p>
+                </div>
+
+                <button type="button" class="btn" onclick="submitTransaction()">
+                    Process Transaction
+                </button>
+            </form>
+        </div>
+        <div class="card">
+            <h2>Transaction History</h2>
+            <div class="controls">
+                <label>
+                    <input type="checkbox" id="showAll"> Show all sessions
+                </label>
+                <div class="pagination">
+                    <button id="prevBtn" class="btn btn-small">Previous</button>
+                    <button id="nextBtn" class="btn btn-small">Next</button>
+                </div>
+            </div>
+            <table id="transactionTable">
+                <thead>
+                    <tr>
+                        <th>Date & Time</th>
+                        <th>Amount</th>
+                        <th>Status</th>
+                        <th>Risk Score</th>
+                        <th>Details</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+    <div class="modal" id="transactionModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                Transaction Details
+                <span class="close-btn">&times;</span>
+            </div>
+            <div class="modal-body"></div>
+        </div>
+    </div>
+
+    <script>
+        let transactions = [];
+        let currentPage = 0;
+        const pageSize = 10;
+
+        // Modal
+        const modal = document.getElementById('transactionModal');
+        modal.querySelector('.close-btn').onclick = () => { modal.style.display = 'none'; };
+        window.onclick = (e) => { if (e.target === modal) modal.style.display = 'none'; };
+
+        function showDetails(tx) {
+            const body = modal.querySelector('.modal-body');
+            body.innerHTML = `
+                <div class="modal-section">
+                    <h4>Transaction Information</h4>
+                    <pre>${JSON.stringify({
+                        ID: tx.transaction_id,
+                        Timestamp: tx.timestamp,
+                        Amount: '$' + parseFloat(tx.Amount).toFixed(2),
+                        Status: tx.label,
+                        FraudProbability: (tx.fraud_probability * 100).toFixed(1) + '%'
+                    }, null, 2)}</pre>
+                </div>
+                ${tx.risk_factors?.length ? `
+                <div class="modal-section">
+                    <h4>Risk Factors</h4>
+                    <pre>${tx.risk_factors.join('\n')}</pre>
+                </div>` : ''}
+            `;
+            modal.style.display = 'block';
+        }
+
+        // Load Transactions
+        async function loadTransactions() {
+            try {
+                const response = await fetch('/api/transactions');
+                const contentType = response.headers.get('content-type');
+                if (!contentType?.includes('application/json')) {
+                    window.location.href = '/login';
+                    return;
+                }
+                
+                let allTx = await response.json();
+                
+                // If checkbox is checked, show all sessions; otherwise show only current session
+                const showAll = document.getElementById('showAll').checked;
+                const currentSessionId = "{{ session.get('id', '') }}";
+                
+                let filtered;
+                if (showAll) {
+                    filtered = allTx;
+                } else {
+                    // Show only current session transactions
+                    filtered = allTx.filter(tx => tx.session_id === currentSessionId);
+                }
+                
+                transactions = filtered.reverse();
+                currentPage = 0;
+                renderPage();
+            } catch (error) {
+                console.error('Error loading transactions:', error);
+            }
+        }
+
+        function renderPage() {
+            const tbody = document.querySelector('#transactionTable tbody');
+            tbody.innerHTML = '';
+
+            if (!transactions.length) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:2rem;color:#94a3b8;">No transactions yet</td></tr>';
+                return;
+            }
+
+            const start = currentPage * pageSize;
+            const pageTx = transactions.slice(start, start + pageSize);
+
+            pageTx.forEach(tx => {
+                const fraudProb = ((tx.fraud_probability || 0) * 100).toFixed(1);
+                const date = new Date(tx.timestamp);
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${date.toLocaleString()}</td>
+                    <td>$${parseFloat(tx.Amount).toFixed(2)}</td>
+                    <td><span class="status-badge status-${tx.label}">${tx.label}</span></td>
+                    <td>
+                        <div class="probability-bar">
+                            <div class="probability-fill" style="width:${fraudProb}%">${fraudProb}%</div>
+                        </div>
+                    </td>
+                    <td>
+                        ${tx.risk_factors?.length ? 
+                            `<button onclick='showDetails(${JSON.stringify(tx).replace(/'/g,"&apos;")})' class="btn btn-small">View</button>` : 
+                            '-'}
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            document.getElementById('prevBtn').disabled = (currentPage + 1) * pageSize >= transactions.length;
+            document.getElementById('nextBtn').disabled = currentPage === 0;
+        }
+
+        // Pagination
+        document.getElementById('prevBtn').addEventListener('click', () => {
+            if ((currentPage + 1) * pageSize < transactions.length) {
+                currentPage++;
+                renderPage();
+            }
+        });
+
+        document.getElementById('nextBtn').addEventListener('click', () => {
+            if (currentPage > 0) {
+                currentPage--;
+                renderPage();
+            }
+        });
+
+        document.getElementById('showAll').addEventListener('change', loadTransactions);
+
+        // Submit Transaction
+        async function submitTransaction() {
+            const amount = parseFloat(document.getElementById('amount').value);
+            
+            if (!amount || amount <= 0) {
+                alert('Please enter a valid amount');
+                return;
+            }
+
+            document.getElementById('loading').style.display = 'block';
+            document.querySelector('.btn').disabled = true;
+
+            try {
+                const response = await fetch('/api/transaction', {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({ Amount: amount })
+                });
+
+                const contentType = response.headers.get('content-type');
+                if (!contentType?.includes('application/json')) {
+                    window.location.href = '/login';
+                    return;
+                }
+
+                const result = await response.json();
+                
+                document.getElementById('loading').style.display = 'none';
+                document.querySelector('.btn').disabled = false;
+
+                const fraudProb = (result.fraud_probability * 100).toFixed(1);
+                
+                if (result.label === 'fraudulent') {
+                    const alertDiv = document.getElementById('alertDanger');
+                    alertDiv.innerHTML = `
+                        <strong>Transaction Flagged</strong><br>
+                        ID: ${result.transaction_id} | Amount: $${amount.toFixed(2)} | Risk: ${fraudProb}%
+                        ${result.risk_factors?.length ? `
+                        <div class="risk-factors">
+                            <strong>Risk Factors:</strong>
+                            <ul>${result.risk_factors.map(f => `<li>${f}</li>`).join('')}</ul>
+                        </div>` : ''}
+                    `;
+                    alertDiv.style.display = 'block';
+                    document.getElementById('alertSuccess').style.display = 'none';
+                    setTimeout(() => { alertDiv.style.display = 'none'; }, 15000);
+                } else {
+                    const alertDiv = document.getElementById('alertSuccess');
+                    alertDiv.innerHTML = `
+                        <strong>Transaction Approved</strong><br>
+                        ID: ${result.transaction_id} | Amount: $${amount.toFixed(2)} | Risk: ${fraudProb}%
+                    `;
+                    alertDiv.style.display = 'block';
+                    document.getElementById('alertDanger').style.display = 'none';
+                    setTimeout(() => { alertDiv.style.display = 'none'; }, 10000);
+                }
+                
+                document.getElementById('transactionForm').reset();
+                loadTransactions();
+            } catch (error) {
+                document.getElementById('loading').style.display = 'none';
+                document.querySelector('.btn').disabled = false;
+                alert('Error: ' + error.message);
+            }
+        }
+
+        // Enter key submits
+        document.getElementById('amount').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') submitTransaction();
+        });
+
+        // Initial load and auto-refresh
+        loadTransactions();
+        setInterval(loadTransactions, 5000);
+    </script>
+</body>
+</html>
